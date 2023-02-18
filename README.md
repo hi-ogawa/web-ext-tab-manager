@@ -1,8 +1,6 @@
-# web-ext-vite-template
+# web-ext-tab-manager
 
-Template for vite-based browser extension development.
-
-As an example, this repo contains a simple clone of https://www.one-tab.com/.
+example browser extension based on https://github.com/hi-ogawa/web-ext-vite-template
 
 ```sh
 pnpm i
@@ -14,9 +12,3 @@ pnpm preview
 ```
 
 ![image](https://user-images.githubusercontent.com/4232207/218294748-00ba6b0f-035b-4475-9dfb-17a61a4cbe44.png)
-
-## references
-
-- https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json
-- https://developer.chrome.com/docs/extensions/mv3/manifest/
-- https://github.com/mdn/webextensions-examples
