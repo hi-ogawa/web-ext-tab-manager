@@ -45,6 +45,7 @@ function AppInner() {
             await tabManagerRemote.addTabGroup([currentTab]);
             await tabManagerRemote.notify();
             if (!e.ctrlKey) {
+              // TODO: focus on existing options page if there's one already
               browser.runtime.openOptionsPage(); // TODO: no promise?
               await browser.tabs.remove([currentTab.id].filter(isNonNil));
             }
