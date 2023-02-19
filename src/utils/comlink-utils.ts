@@ -109,6 +109,7 @@ function connectPort(portName: string) {
 //
 export class PortEventEmitter {
   private eventEmitter = new EventEmitter();
+  private portPromises = new Map<string, Promise<browser.Runtime.Port>>();
   private subscriptions = new DefaultMap<
     string,
     Map<string, { handler: any; port: browser.Runtime.Port }>
@@ -118,9 +119,16 @@ export class PortEventEmitter {
     this.eventEmitter.emit(event, data);
   }
 
+  // need to explicitly setup port before `on` to break race condition
+  preparePort(portId: string) {
+    tinyassert(!this.portPromises.get(portId));
+    this.portPromises.set(portId, receivePortOnce(portId));
+  }
+
   async on(type: string, portId: string) {
     tinyassert(!this.subscriptions.get(type).has(portId));
-    const port = await receivePortOnce(portId);
+    const port = await this.portPromises.get(portId);
+    tinyassert(port);
     const onEvent = (e: unknown) => {
       port.postMessage(e);
     };
@@ -138,7 +146,7 @@ export class PortEventEmitter {
   off(type: string, portId: string) {
     const subscription = this.subscriptions.get(type).get(portId);
     if (subscription) {
-      tinyassert(subscription);
+      this.subscriptions.get(type).delete(portId);
       this.eventEmitter.off(type, subscription.handler);
       subscription.port.disconnect();
     }
@@ -149,11 +157,11 @@ export class PortEventEmitterRemote {
   constructor(private remote: comlink.Remote<PortEventEmitter>) {}
 
   // TODO: off
-  on(type: string, handler: (...args: any[]) => void) {
+  async on(type: string, handler: (...args: any[]) => void) {
     const portId = `portId:${generateId()}`;
-    // TODO: race condition
-    this.remote.on(type, portId);
+    await this.remote.preparePort(portId);
     const port = connectPort(portId);
+    await this.remote.on(type, portId);
     port.onMessage.addListener(handler);
   }
 }
