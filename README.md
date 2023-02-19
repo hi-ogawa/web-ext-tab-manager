@@ -11,4 +11,4 @@ pnpm build
 pnpm preview
 ```
 
-![image](https://user-images.githubusercontent.com/4232207/218294748-00ba6b0f-035b-4475-9dfb-17a61a4cbe44.png)
+![image](https://user-images.githubusercontent.com/4232207/219943033-e1840a3e-4b4a-46f5-85f2-165d39ca82b5.png)
