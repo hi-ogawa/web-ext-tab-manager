@@ -29,7 +29,6 @@ export function App() {
 const QUERY_KEYS = z.enum(["getTabGroups", "runImport", "runExport"]).enum;
 
 export function AppInner() {
-  // TODO: spinner, cache
   const tabGroupsQuery = useQuery({
     queryKey: [QUERY_KEYS.getTabGroups],
     queryFn: () => tabManagerRemote.getTabGroups(),
@@ -55,6 +54,9 @@ export function AppInner() {
       <div className="flex items-center gap-2">
         <h1 className="text-xl">Tab Manager</h1>
         <ImportExportModalButton />
+        {tabGroupsQuery.isFetching && (
+          <span className="antd-spin w-5 h-5"></span>
+        )}
       </div>
       <div className="flex flex-col gap-5 pl-2">
         {tabGroupsQuery.isSuccess && tabGroupsQuery.data.length === 0 && (
