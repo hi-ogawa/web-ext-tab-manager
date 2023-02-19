@@ -63,6 +63,8 @@ export function exposeComlinkService(portName: string, service: unknown) {
   const handler = (port: browser.Runtime.Port) => {
     if (port.name === portName) {
       comlink.expose(service, createComlinkEndpoint(port));
+      // TODO: something to cleanup on disconnect?
+      port.onDisconnect;
       return;
     }
   };

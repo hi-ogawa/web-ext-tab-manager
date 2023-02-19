@@ -1,8 +1,32 @@
+import { Compose } from "@hiogawa/utils-react";
+import { useQuery } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 import browser from "webextension-polyfill";
+import { CustomQueryClientProvider, ToasterWrapper } from "../components/misc";
 import { isNonNil } from "../utils/misc";
 import { tabManagerRemote } from "../utils/tab-manager-remote";
 
 export function App() {
+  return (
+    <Compose
+      elements={[
+        <CustomQueryClientProvider noDevTools />,
+        <ToasterWrapper />,
+        <AppInner />,
+      ]}
+    />
+  );
+}
+
+function AppInner() {
+  const pingQuery = useQuery({
+    queryKey: ["ping"],
+    queryFn: () => tabManagerRemote.ping(),
+    onError: (e) => {
+      toast.error("ping: " + String(e));
+    },
+  });
+
   return (
     <div className="w-[200px] flex flex-col gap-2 m-2">
       <button
@@ -57,6 +81,11 @@ export function App() {
       >
         Open options page
       </button>
+      {pingQuery.isFetching && (
+        <div className="absolute inset-0 bg-black/20 flex justify-center items-center">
+          <div className="antd-spin w-10 h-10 text-black/60 border-2"></div>
+        </div>
+      )}
     </div>
   );
 }
