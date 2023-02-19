@@ -5,6 +5,7 @@ import * as comlink from "comlink";
 import * as superjson from "superjson";
 import { generateId } from "./misc";
 import EventEmitter from "eventemitter3";
+import { logger } from "./logger";
 
 // similar idea as https://github.com/GoogleChromeLabs/comlink/blob/dffe9050f63b1b39f30213adeb1dd4b9ed7d2594/src/node-adapter.ts#L24
 export function createComlinkEndpoint(port: browser.Runtime.Port): Endpoint {
@@ -53,8 +54,7 @@ export function createComlinkEndpoint(port: browser.Runtime.Port): Endpoint {
 
 export function createComlinkProxy<T>(portName: string): comlink.Remote<T> {
   const port = connectPort(portName);
-  // TODO: ability to disconnect
-  port.disconnect;
+  // TODO: ability to disconnect? `port.disconnect`
   const endpoint = createComlinkEndpoint(port);
   const proxy = comlink.wrap<T>(endpoint);
   return proxy;
@@ -70,13 +70,13 @@ function receivePort(
   portName: string,
   onConnect: (port: browser.Runtime.Port) => void
 ) {
-  console.log(`receivePort:register`, portName);
+  logger.debug("receivePort:register %s", portName);
   const handler = (port: browser.Runtime.Port) => {
     if (port.name === portName) {
-      console.log(`receivePort:handler`, portName);
+      logger.debug("receivePort:handler %s", portName);
       onConnect(port);
       const onDisconnect = () => {
-        console.log(`receivePort:onDisconnect`, portName);
+        logger.debug("receivePort:onDisconnect %s", portName);
         port.onDisconnect.removeListener(onDisconnect);
       };
       port.onDisconnect.addListener(onDisconnect);
@@ -99,7 +99,7 @@ function receivePortOnce(portName: string): Promise<browser.Runtime.Port> {
 
 // TODO: explicit initial handshake between sharePort/receivePort to make sure connection is established?
 function connectPort(portName: string) {
-  console.log("sharePort:register", portName);
+  logger.debug("sharePort:register %s", portName);
   return browser.runtime.connect({ name: portName });
 }
 
