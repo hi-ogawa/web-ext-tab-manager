@@ -74,6 +74,9 @@ export function exposeComlinkService(portName: string, service: unknown) {
   };
 }
 
+// TODO: give up using `comlink.proxy` for finer/controlled management of ports
+//       cf. https://github.com/hi-ogawa/electron-vite-template/blob/24964f90afb9bfa9fb94ec17b39b24d3c2002d58/src/utils/comlink-event-utils.ts
+
 // porting https://github.com/GoogleChromeLabs/comlink/blob/dffe9050f63b1b39f30213adeb1dd4b9ed7d2594/src/comlink.ts#L209
 // since `browser.Runtime.Port` doesn't support "transfer"
 const myProxyTransferHandler: comlink.TransferHandler<any, string> = {
