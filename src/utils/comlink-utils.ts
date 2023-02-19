@@ -8,7 +8,7 @@ import EventEmitter from "eventemitter3";
 import { logger } from "./logger";
 
 // similar idea as https://github.com/GoogleChromeLabs/comlink/blob/dffe9050f63b1b39f30213adeb1dd4b9ed7d2594/src/node-adapter.ts#L24
-export function createComlinkEndpoint(port: browser.Runtime.Port): Endpoint {
+function createComlinkEndpoint(port: browser.Runtime.Port): Endpoint {
   const listerMap = new WeakMap<object, any>();
 
   return {
@@ -52,6 +52,10 @@ export function createComlinkEndpoint(port: browser.Runtime.Port): Endpoint {
   };
 }
 
+//
+// comlink.wrap/expose on top of browser.Runtime.Port
+//
+
 export function wrapComlinkOnPort<T>(portName: string): comlink.Remote<T> {
   const port = connectPort(portName);
   // TODO: ability to disconnect? `port.disconnect`
@@ -65,6 +69,11 @@ export function exposeComlinkOnPort(portName: string, service: unknown) {
     comlink.expose(service, createComlinkEndpoint(port));
   });
 }
+
+//
+// runtime.connect/onConnect wrapper
+// TODO: explicit initial handshake between sharePort/receivePort to make sure connection is established? with error on given timeout?
+//
 
 function receivePort(
   portName: string,
@@ -97,7 +106,6 @@ function receivePortOnce(portName: string): Promise<browser.Runtime.Port> {
   });
 }
 
-// TODO: explicit initial handshake between sharePort/receivePort to make sure connection is established?
 function connectPort(portName: string) {
   logger.debug("sharePort:register %s", portName);
   const port = browser.runtime.connect({ name: portName });
@@ -110,9 +118,10 @@ function connectPort(portName: string) {
 }
 
 //
-// ditch `comlink.proxy` for finer/controlled management of ports
+// ditch `comlink.proxy` based callback for more fine-grained port management
 // cf. https://github.com/hi-ogawa/electron-vite-template/blob/24964f90afb9bfa9fb94ec17b39b24d3c2002d58/src/utils/comlink-event-utils.ts
 //
+
 export class PortEventEmitter {
   private eventEmitter = new EventEmitter();
   private portPromises = new Map<string, Promise<browser.Runtime.Port>>();
