@@ -52,7 +52,7 @@ export function createComlinkEndpoint(port: browser.Runtime.Port): Endpoint {
   };
 }
 
-export function createComlinkProxy<T>(portName: string): comlink.Remote<T> {
+export function wrapComlinkOnPort<T>(portName: string): comlink.Remote<T> {
   const port = connectPort(portName);
   // TODO: ability to disconnect? `port.disconnect`
   const endpoint = createComlinkEndpoint(port);
@@ -60,7 +60,7 @@ export function createComlinkProxy<T>(portName: string): comlink.Remote<T> {
   return proxy;
 }
 
-export function exposeComlinkService(portName: string, service: unknown) {
+export function exposeComlinkOnPort(portName: string, service: unknown) {
   return receivePort(portName, (port) => {
     comlink.expose(service, createComlinkEndpoint(port));
   });
@@ -100,7 +100,13 @@ function receivePortOnce(portName: string): Promise<browser.Runtime.Port> {
 // TODO: explicit initial handshake between sharePort/receivePort to make sure connection is established?
 function connectPort(portName: string) {
   logger.debug("sharePort:register %s", portName);
-  return browser.runtime.connect({ name: portName });
+  const port = browser.runtime.connect({ name: portName });
+  const onDisconnect = () => {
+    logger.debug("connectPort:onDisconnect %s", portName);
+    port.onDisconnect.removeListener(onDisconnect);
+  };
+  port.onDisconnect.addListener(onDisconnect);
+  return port;
 }
 
 //
