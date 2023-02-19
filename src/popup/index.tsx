@@ -2,8 +2,10 @@ import "../styles/index.ts";
 import { createRoot } from "react-dom/client";
 import { tinyassert } from "@hiogawa/utils";
 import { App } from "./app";
+import { initializeTabManagerRemote } from "../utils/tab-manager-remote";
 
-function main() {
+async function main() {
+  await initializeTabManagerRemote();
   const el = document.querySelector("#root");
   tinyassert(el);
   const root = createRoot(el);
