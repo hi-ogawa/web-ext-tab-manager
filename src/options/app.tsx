@@ -11,7 +11,7 @@ import {
 import { Modal } from "../components/modal";
 import { intl, format } from "../utils/intl";
 import { cls } from "../utils/misc";
-import { tabManagerProxy } from "../utils/tab-manager-client";
+import { tabManagerRemote } from "../utils/tab-manager-remote";
 import { z } from "zod";
 
 export function App() {
@@ -29,10 +29,9 @@ export function App() {
 const QUERY_KEYS = z.enum(["getTabGroups", "runImport", "runExport"]).enum;
 
 export function AppInner() {
-  // TODO: spinner, cache
   const tabGroupsQuery = useQuery({
     queryKey: [QUERY_KEYS.getTabGroups],
-    queryFn: () => tabManagerProxy.getTabGroups(),
+    queryFn: () => tabManagerRemote.getTabGroups(),
     onError: () => {
       toast.error("failed to load tab data");
     },
@@ -41,7 +40,7 @@ export function AppInner() {
   const queryClient = useQueryClient();
   React.useEffect(() => {
     // TODO: unsubscribe
-    tabManagerProxy.subscribe(
+    tabManagerRemote.subscribe(
       proxy(() => {
         queryClient.invalidateQueries([QUERY_KEYS.getTabGroups]);
         queryClient.invalidateQueries([QUERY_KEYS.runExport]);
@@ -55,6 +54,9 @@ export function AppInner() {
       <div className="flex items-center gap-2">
         <h1 className="text-xl">Tab Manager</h1>
         <ImportExportModalButton />
+        {tabGroupsQuery.isFetching && (
+          <span className="antd-spin w-5 h-5"></span>
+        )}
       </div>
       <div className="flex flex-col gap-5 pl-2">
         {tabGroupsQuery.isSuccess && tabGroupsQuery.data.length === 0 && (
@@ -80,9 +82,9 @@ export function AppInner() {
                 <button
                   className="antd-btn antd-btn-default px-2"
                   onClick={async (e) => {
-                    await tabManagerProxy.restoreTabGroup(group.id);
+                    await tabManagerRemote.restoreTabGroup(group.id);
                     if (!e.ctrlKey) {
-                      await tabManagerProxy.deleteTabGroup(group.id);
+                      await tabManagerRemote.deleteTabGroup(group.id);
                     }
                     tabGroupsQuery.refetch();
                   }}
@@ -92,7 +94,7 @@ export function AppInner() {
                 <button
                   className="antd-btn antd-btn-default px-2"
                   onClick={async () => {
-                    await tabManagerProxy.deleteTabGroup(group.id);
+                    await tabManagerRemote.deleteTabGroup(group.id);
                     tabGroupsQuery.refetch();
                   }}
                 >
@@ -108,7 +110,7 @@ export function AppInner() {
                       target="_blank"
                       onClick={async (e) => {
                         if (!e.ctrlKey) {
-                          await tabManagerProxy.delteTab(group.id, index);
+                          await tabManagerRemote.delteTab(group.id, index);
                           tabGroupsQuery.refetch();
                         }
                       }}
@@ -127,7 +129,7 @@ export function AppInner() {
                     <button
                       className="antd-btn antd-btn-ghost flex items-center"
                       onClick={async () => {
-                        await tabManagerProxy.delteTab(group.id, index);
+                        await tabManagerRemote.delteTab(group.id, index);
                         tabGroupsQuery.refetch();
                       }}
                     >
@@ -202,10 +204,10 @@ function ImportPage() {
 
   const importQuery = useMutation({
     mutationKey: [QUERY_KEYS.runImport],
-    mutationFn: (data: string) => tabManagerProxy.runImport(data),
+    mutationFn: (data: string) => tabManagerRemote.runImport(data),
     onSuccess: () => {
       toast.success("Successfuly imported data");
-      tabManagerProxy.notify();
+      tabManagerRemote.notify();
     },
     onError: () => {
       toast.error("failed to import data");
@@ -241,7 +243,7 @@ function ImportPage() {
 function ExportPage() {
   const exportQuery = useQuery({
     queryKey: [QUERY_KEYS.runExport],
-    queryFn: () => tabManagerProxy.runExport(),
+    queryFn: () => tabManagerRemote.runExport(),
     onError: () => {
       toast.error("failed to export data");
     },

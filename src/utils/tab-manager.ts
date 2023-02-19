@@ -1,18 +1,19 @@
 import browser from "webextension-polyfill";
 import * as superjson from "superjson";
-import { proxy } from "comlink";
 import { generateId } from "./misc";
 import { pick } from "lodash";
 import { z } from "zod";
+import EventEmitter from "eventemitter3";
 
 export const CONNECT_TAB_MANAGER = "CONNECT_TAB_MANAGER";
 
 const STORAGE_KEY = "__TabManager_3";
 const STORAGE_PROPS: (keyof TabManager)[] = ["groups"];
+const EVENT_NOTIFY = "EVENT_NOTIFY";
 
 export class TabManager {
   groups: SavedTabGroup[] = [];
-  handlers = new Set<() => void>();
+  private eventEmitter = new EventEmitter();
 
   //
   // persistence
@@ -46,6 +47,10 @@ export class TabManager {
   // api
   //
 
+  ping(): boolean {
+    return true;
+  }
+
   runImport(serialized: string) {
     const groups = deserializeExport(serialized);
     this.groups = groups.concat(this.groups);
@@ -57,14 +62,11 @@ export class TabManager {
   }
 
   subscribe(handler: () => void) {
-    this.handlers.add(handler);
-    return proxy(() => this.handlers.delete(handler));
+    this.eventEmitter.on(EVENT_NOTIFY, handler);
   }
 
   notify() {
-    for (const handler of this.handlers) {
-      handler();
-    }
+    this.eventEmitter.emit(EVENT_NOTIFY);
   }
 
   getTabGroups(): SavedTabGroup[] {
