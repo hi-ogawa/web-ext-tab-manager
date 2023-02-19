@@ -6,8 +6,9 @@ import { CONNECT_TAB_MANAGER } from "./tab-manager-common";
 export let tabManagerRemote: Remote<TabManager>;
 export let tabManagerEventEmitterRemote: PortEventEmitterRemote;
 
+// TODO: spinner / error hadnling (retry?)
 export async function initializeTabManagerRemote() {
-  tabManagerRemote = wrapComlinkOnPort<TabManager>(CONNECT_TAB_MANAGER);
+  tabManagerRemote = await wrapComlinkOnPort<TabManager>(CONNECT_TAB_MANAGER);
   tabManagerEventEmitterRemote = new PortEventEmitterRemote(
     // @ts-expect-error wrong comlink typing
     tabManagerRemote.eventEmitter
