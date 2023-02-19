@@ -1,9 +1,10 @@
 import browser from "webextension-polyfill";
 import type { Endpoint } from "comlink";
-import { tinyassert } from "@hiogawa/utils";
+import { DefaultMap, tinyassert } from "@hiogawa/utils";
 import * as comlink from "comlink";
 import * as superjson from "superjson";
 import { generateId } from "./misc";
+import EventEmitter from "eventemitter3";
 
 // similar idea as https://github.com/GoogleChromeLabs/comlink/blob/dffe9050f63b1b39f30213adeb1dd4b9ed7d2594/src/node-adapter.ts#L24
 export function createComlinkEndpoint(port: browser.Runtime.Port): Endpoint {
@@ -51,8 +52,8 @@ export function createComlinkEndpoint(port: browser.Runtime.Port): Endpoint {
 }
 
 export function createComlinkProxy<T>(portName: string): comlink.Remote<T> {
-  const port = browser.runtime.connect({ name: portName });
-  // TODO: disconnect
+  const port = connectPort(portName);
+  // TODO: ability to disconnect
   port.disconnect;
   const endpoint = createComlinkEndpoint(port);
   const proxy = comlink.wrap<T>(endpoint);
@@ -60,12 +61,25 @@ export function createComlinkProxy<T>(portName: string): comlink.Remote<T> {
 }
 
 export function exposeComlinkService(portName: string, service: unknown) {
+  return receivePort(portName, (port) => {
+    comlink.expose(service, createComlinkEndpoint(port));
+  });
+}
+
+function receivePort(
+  portName: string,
+  onConnect: (port: browser.Runtime.Port) => void
+) {
+  console.log(`receivePort:register`, portName);
   const handler = (port: browser.Runtime.Port) => {
     if (port.name === portName) {
-      comlink.expose(service, createComlinkEndpoint(port));
-      // TODO: something to cleanup on disconnect?
-      port.onDisconnect;
-      return;
+      console.log(`receivePort:handler`, portName);
+      onConnect(port);
+      const onDisconnect = () => {
+        console.log(`receivePort:onDisconnect`, portName);
+        port.onDisconnect.removeListener(onDisconnect);
+      };
+      port.onDisconnect.addListener(onDisconnect);
     }
   };
   browser.runtime.onConnect.addListener(handler);
@@ -74,32 +88,72 @@ export function exposeComlinkService(portName: string, service: unknown) {
   };
 }
 
-// TODO: give up using `comlink.proxy` for finer/controlled management of ports
-//       cf. https://github.com/hi-ogawa/electron-vite-template/blob/24964f90afb9bfa9fb94ec17b39b24d3c2002d58/src/utils/comlink-event-utils.ts
+function receivePortOnce(portName: string): Promise<browser.Runtime.Port> {
+  return new Promise((resolve) => {
+    const unsubscribe = receivePort(portName, (port) => {
+      unsubscribe();
+      resolve(port);
+    });
+  });
+}
 
-// porting https://github.com/GoogleChromeLabs/comlink/blob/dffe9050f63b1b39f30213adeb1dd4b9ed7d2594/src/comlink.ts#L209
-// since `browser.Runtime.Port` doesn't support "transfer"
-const myProxyTransferHandler: comlink.TransferHandler<any, string> = {
-  canHandle: (value: unknown): value is any => {
-    return Boolean(
-      value &&
-        (typeof value === "object" || typeof value === "function") &&
-        comlink.proxyMarker in value
-    );
-  },
+// TODO: explicit initial handshake between sharePort/receivePort to make sure connection is established?
+function connectPort(portName: string) {
+  console.log("sharePort:register", portName);
+  return browser.runtime.connect({ name: portName });
+}
 
-  serialize: (value: any): [string, Transferable[]] => {
-    const portName = `proxy-port-${generateId()}`;
-    const unsubscribe = exposeComlinkService(portName, value);
-    // TODO: how to unsubscribe? probably leaks a lot especially during hmr dev
-    //       special "releaseProxy" message for this purpose? https://github.com/GoogleChromeLabs/comlink/blob/dffe9050f63b1b39f30213adeb1dd4b9ed7d2594/src/comlink.ts#L457
-    unsubscribe;
-    return [portName, []];
-  },
+//
+// ditch `comlink.proxy` for finer/controlled management of ports
+// cf. https://github.com/hi-ogawa/electron-vite-template/blob/24964f90afb9bfa9fb94ec17b39b24d3c2002d58/src/utils/comlink-event-utils.ts
+//
+export class PortEventEmitter {
+  private eventEmitter = new EventEmitter();
+  private subscriptions = new DefaultMap<
+    string,
+    Map<string, { handler: any; port: browser.Runtime.Port }>
+  >(() => new Map());
 
-  deserialize: (portName: string): any => {
-    return createComlinkProxy(portName);
-  },
-};
+  emit(event: string, data?: unknown) {
+    this.eventEmitter.emit(event, data);
+  }
 
-comlink.transferHandlers.set("proxy", myProxyTransferHandler);
+  async on(type: string, portId: string) {
+    tinyassert(!this.subscriptions.get(type).has(portId));
+    const port = await receivePortOnce(portId);
+    const onEvent = (e: unknown) => {
+      port.postMessage(e);
+    };
+    this.eventEmitter.on(type, onEvent);
+    this.subscriptions.get(type).set(portId, { handler: onEvent, port });
+
+    // force unsubscribe when port is closed
+    const onDisconnect = () => {
+      port.onDisconnect.removeListener(onDisconnect);
+      this.off(type, portId);
+    };
+    port.onDisconnect.addListener(onDisconnect);
+  }
+
+  off(type: string, portId: string) {
+    const subscription = this.subscriptions.get(type).get(portId);
+    if (subscription) {
+      tinyassert(subscription);
+      this.eventEmitter.off(type, subscription.handler);
+      subscription.port.disconnect();
+    }
+  }
+}
+
+export class PortEventEmitterRemote {
+  constructor(private remote: comlink.Remote<PortEventEmitter>) {}
+
+  // TODO: off
+  on(type: string, handler: (...args: any[]) => void) {
+    const portId = `portId:${generateId()}`;
+    // TODO: race condition
+    this.remote.on(type, portId);
+    const port = connectPort(portId);
+    port.onMessage.addListener(handler);
+  }
+}

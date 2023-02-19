@@ -3,17 +3,15 @@ import * as superjson from "superjson";
 import { generateId } from "./misc";
 import { pick } from "lodash";
 import { z } from "zod";
-import EventEmitter from "eventemitter3";
-
-export const CONNECT_TAB_MANAGER = "CONNECT_TAB_MANAGER";
+import { PortEventEmitter } from "./comlink-utils";
+import { EVENT_NOTIFY } from "./tab-manager-common";
 
 const STORAGE_KEY = "__TabManager_3";
 const STORAGE_PROPS: (keyof TabManager)[] = ["groups"];
-const EVENT_NOTIFY = "EVENT_NOTIFY";
 
 export class TabManager {
   groups: SavedTabGroup[] = [];
-  private eventEmitter = new EventEmitter();
+  eventEmitter = new PortEventEmitter();
 
   //
   // persistence
@@ -59,10 +57,6 @@ export class TabManager {
 
   runExport(): string {
     return serializeExport(this.groups);
-  }
-
-  subscribe(handler: () => void) {
-    this.eventEmitter.on(EVENT_NOTIFY, handler);
   }
 
   notify() {
@@ -182,17 +176,3 @@ function deserializeExport(serialized: string): SavedTabGroup[] {
   }));
   return groups;
 }
-
-// loophole for dev convenience
-async function __importTabManager(serialized: string) {
-  const tabManager = TabManager.deserialize(serialized);
-  await tabManager.save();
-}
-
-async function __exportTabManager() {
-  const tabManager = await TabManager.load();
-  const serialized = tabManager.serialize();
-  console.log(JSON.stringify(serialized));
-}
-
-Object.assign(globalThis, { __importTabManager, __exportTabManager });

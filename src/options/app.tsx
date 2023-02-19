@@ -1,6 +1,5 @@
 import { Compose } from "@hiogawa/utils-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { proxy } from "comlink";
 import React from "react";
 import toast from "react-hot-toast";
 import {
@@ -11,8 +10,12 @@ import {
 import { Modal } from "../components/modal";
 import { intl, format } from "../utils/intl";
 import { cls } from "../utils/misc";
-import { tabManagerRemote } from "../utils/tab-manager-remote";
+import {
+  tabManagerEventEmitterRemote,
+  tabManagerRemote,
+} from "../utils/tab-manager-remote";
 import { z } from "zod";
+import { EVENT_NOTIFY } from "../utils/tab-manager-common";
 
 export function App() {
   return (
@@ -40,12 +43,10 @@ export function AppInner() {
   const queryClient = useQueryClient();
   React.useEffect(() => {
     // TODO: unsubscribe
-    tabManagerRemote.subscribe(
-      proxy(() => {
-        queryClient.invalidateQueries([QUERY_KEYS.getTabGroups]);
-        queryClient.invalidateQueries([QUERY_KEYS.runExport]);
-      })
-    );
+    tabManagerEventEmitterRemote.on(EVENT_NOTIFY, () => {
+      queryClient.invalidateQueries([QUERY_KEYS.getTabGroups]);
+      queryClient.invalidateQueries([QUERY_KEYS.runExport]);
+    });
   }, []);
 
   // TODO: drag-drop

@@ -1,0 +1,2 @@
+export const CONNECT_TAB_MANAGER = "CONNECT_TAB_MANAGER";
+export const EVENT_NOTIFY = "EVENT_NOTIFY";
