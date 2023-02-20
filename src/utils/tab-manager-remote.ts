@@ -16,7 +16,6 @@ export function initializeTabManagerRemote() {
 }
 
 async function initializeTabManagerRemoteInternal() {
-  // retry to workaround race condition with background worker initialization
   tabManagerRemote = await wrapComlinkOnPort<TabManager>(CONNECT_TAB_MANAGER);
   tabManagerEventEmitterRemote = new PortEventEmitterRemote(
     // @ts-expect-error wrong comlink typing
