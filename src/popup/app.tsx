@@ -1,3 +1,4 @@
+import { tinyassert } from "@hiogawa/utils";
 import { Compose } from "@hiogawa/utils-react";
 import { useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
@@ -45,8 +46,7 @@ function AppInner() {
             await tabManagerRemote.addTabGroup([currentTab]);
             await tabManagerRemote.notify();
             if (!e.ctrlKey) {
-              // TODO: focus on existing options page if there's one already
-              browser.runtime.openOptionsPage(); // TODO: no promise?
+              await focusOrOpenOptionsPage();
               await browser.tabs.remove([currentTab.id].filter(isNonNil));
             }
           }
@@ -67,7 +67,7 @@ function AppInner() {
           await tabManagerRemote.addTabGroup(tabs);
           await tabManagerRemote.notify();
           if (!e.ctrlKey) {
-            browser.runtime.openOptionsPage();
+            await focusOrOpenOptionsPage();
             await browser.tabs.remove(tabs.map((t) => t.id).filter(isNonNil));
           }
         }}
@@ -91,7 +91,25 @@ function AppInner() {
   );
 }
 
-const IGNORE_PATTERNS = [
-  "chrome://newtab/",
-  `chrome-extension://${browser.runtime.id}/`,
-];
+const IGNORE_PATTERNS = ["chrome://", "chrome-extension://"];
+
+const MANIFEST = browser.runtime.getManifest();
+
+// prettier-ignore
+const OPTIONS_PAGE_URL = `chrome-extension://${browser.runtime.id}/${(MANIFEST as any).options_page}`;
+
+async function focusOrOpenOptionsPage() {
+  const tabs = await browser.tabs.query({
+    url: OPTIONS_PAGE_URL,
+  });
+  console.log("===", OPTIONS_PAGE_URL, tabs);
+  const tab = tabs[0];
+  if (tab) {
+    tinyassert(tab.id);
+    tinyassert(tab.windowId);
+    await browser.windows.update(tab.windowId, { focused: true });
+    await browser.tabs.highlight({ windowId: tab.windowId, tabs: [tab.index] });
+  } else {
+    browser.runtime.openOptionsPage(); // TODO: no promise api?
+  }
+}
