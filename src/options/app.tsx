@@ -13,6 +13,7 @@ import { cls } from "../utils/misc";
 import {
   tabManagerEventEmitterRemote,
   tabManagerRemote,
+  useTabManagerRemoteReady,
 } from "../utils/tab-manager-remote";
 import { z } from "zod";
 import { EVENT_NOTIFY } from "../utils/tab-manager-common";
@@ -31,23 +32,29 @@ export function App() {
 
 const QUERY_KEYS = z.enum(["getTabGroups", "runImport", "runExport"]).enum;
 
-export function AppInner() {
+function AppInner() {
+  const tabManagerRemoteReadyQuery = useTabManagerRemoteReady();
+
   const tabGroupsQuery = useQuery({
     queryKey: [QUERY_KEYS.getTabGroups],
     queryFn: () => tabManagerRemote.getTabGroups(),
     onError: () => {
       toast.error("failed to load tab data");
     },
+    enabled: tabManagerRemoteReadyQuery.isSuccess,
   });
 
   const queryClient = useQueryClient();
   React.useEffect(() => {
+    if (!tabManagerRemoteReadyQuery.isSuccess) {
+      return;
+    }
     // TODO: unsubscribe
     tabManagerEventEmitterRemote.on(EVENT_NOTIFY, () => {
       queryClient.invalidateQueries([QUERY_KEYS.getTabGroups]);
       queryClient.invalidateQueries([QUERY_KEYS.runExport]);
     });
-  }, []);
+  }, [tabManagerRemoteReadyQuery.isSuccess]);
 
   // TODO: drag-drop
   return (
@@ -55,7 +62,8 @@ export function AppInner() {
       <div className="flex items-center gap-2">
         <h1 className="text-xl">Tab Manager</h1>
         <ImportExportModalButton />
-        {tabGroupsQuery.isFetching && (
+        {(tabManagerRemoteReadyQuery.isFetching ||
+          tabGroupsQuery.isFetching) && (
           <span className="antd-spin w-5 h-5"></span>
         )}
       </div>

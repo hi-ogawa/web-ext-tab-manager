@@ -1,16 +1,37 @@
+import { useQuery } from "@tanstack/react-query";
 import type { Remote } from "comlink";
+import { toast } from "react-hot-toast";
 import { wrapComlinkOnPort, PortEventEmitterRemote } from "./comlink-utils";
+import { retryPromise } from "./misc";
 import type { TabManager } from "./tab-manager";
 import { CONNECT_TAB_MANAGER } from "./tab-manager-common";
 
+export let tabManagerRemoteReady: Promise<boolean>;
 export let tabManagerRemote: Remote<TabManager>;
 export let tabManagerEventEmitterRemote: PortEventEmitterRemote;
 
-// TODO: spinner / error hadnling (retry?)
-export async function initializeTabManagerRemote() {
+export function initializeTabManagerRemote() {
+  // retry to workaround race condition with background worker initialization
+  tabManagerRemoteReady = retryPromise(3)(initializeTabManagerRemoteInternal);
+}
+
+async function initializeTabManagerRemoteInternal() {
+  // retry to workaround race condition with background worker initialization
   tabManagerRemote = await wrapComlinkOnPort<TabManager>(CONNECT_TAB_MANAGER);
   tabManagerEventEmitterRemote = new PortEventEmitterRemote(
     // @ts-expect-error wrong comlink typing
     tabManagerRemote.eventEmitter
   );
+  return true;
+}
+
+export function useTabManagerRemoteReady() {
+  return useQuery({
+    queryKey: ["tabManagerRemoteReady"],
+    queryFn: () => tabManagerRemoteReady,
+    onError: () => {
+      toast.error("failed to initialize extension");
+    },
+    staleTime: Infinity,
+  });
 }

@@ -122,7 +122,7 @@ function receivePortOnce(portName: string): Promise<browser.Runtime.Port> {
 }
 
 const HANDSHAKE_ID = "HANDSHAKE_ID";
-const HANDSHAKE_TIMEOUT = 3000;
+const HANDSHAKE_TIMEOUT = 1000;
 
 async function handshakeConnectPort(port: browser.Runtime.Port): Promise<void> {
   const id = `handshake:${generateId()}`;

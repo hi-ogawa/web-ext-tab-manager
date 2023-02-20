@@ -1,3 +1,4 @@
+import { tinyassert } from "@hiogawa/utils";
 import { isNil } from "lodash";
 
 export function generateId(): string {
@@ -17,4 +18,34 @@ export function cls(...args: unknown[]): string {
 
 export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export function range(n: number): number[] {
+  return Array.from(Array(n), (_, i) => i);
+}
+
+export function retryPromise(
+  limit: number,
+  backoff: (i: number) => number = retryBackoffExponential(1, 2)
+) {
+  return async function wrapper<T>(run: () => Promise<T>): Promise<T> {
+    for (const i of range(limit)) {
+      try {
+        return await run();
+      } catch (error: any) {
+        console.error("retryPromise", i, error);
+        await sleep(backoff(i));
+        continue;
+      }
+    }
+    throw new Error("unreachable");
+  };
+}
+
+function retryBackoffExponential(
+  min: number,
+  base: number
+): (i: number) => number {
+  tinyassert(min > 0);
+  return (i: number) => min * base ** i;
 }
