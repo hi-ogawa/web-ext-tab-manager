@@ -74,7 +74,6 @@ export function exposeComlinkOnPort(portName: string, service: unknown) {
 
 //
 // runtime.connect/onConnect wrapper
-// TODO: explicit initial handshake between sharePort/receivePort to make sure connection is established? with error on given timeout?
 //
 
 async function connectPort(portName: string): Promise<browser.Runtime.Port> {
