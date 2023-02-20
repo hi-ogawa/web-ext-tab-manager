@@ -45,10 +45,6 @@ export class TabManager {
   // api
   //
 
-  ping(): boolean {
-    return true;
-  }
-
   runImport(serialized: string) {
     const groups = deserializeExport(serialized);
     this.groups = groups.concat(this.groups);
