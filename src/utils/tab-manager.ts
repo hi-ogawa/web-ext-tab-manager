@@ -5,6 +5,7 @@ import { pick } from "lodash";
 import { z } from "zod";
 import { PortEventEmitter } from "./comlink-utils";
 import { EVENT_NOTIFY } from "./tab-manager-common";
+import { booleanGuard } from "@hiogawa/utils";
 
 const STORAGE_KEY = "__TabManager_3";
 const STORAGE_PROPS: (keyof TabManager)[] = ["groups"];
@@ -85,14 +86,20 @@ export class TabManager {
   async restoreTabGroup(id: string) {
     const group = this.groups.find((g) => g.id === id);
     if (group) {
-      // TODO: remove default new tab
       const newWindow = await browser.windows.create();
       for (const tab of group.tabs) {
         await browser.tabs.create({
+          active: false,
           url: tab.url,
           windowId: newWindow.id,
         });
       }
+      // remove auto-generated "new tab"
+      const toRemove = await browser.tabs.query({
+        windowId: newWindow.id,
+        url: "chrome://newtab/",
+      });
+      await browser.tabs.remove(toRemove.map((t) => t.id).filter(booleanGuard));
     }
   }
 
