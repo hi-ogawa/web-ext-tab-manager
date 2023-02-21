@@ -102,7 +102,6 @@ async function focusOrOpenOptionsPage() {
   const tabs = await browser.tabs.query({
     url: OPTIONS_PAGE_URL,
   });
-  console.log("===", OPTIONS_PAGE_URL, tabs);
   const tab = tabs[0];
   if (tab) {
     tinyassert(tab.id);
