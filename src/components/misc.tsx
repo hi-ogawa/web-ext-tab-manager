@@ -29,7 +29,7 @@ export function CustomQueryClientProvider(
 export function ToasterWrapper(props: React.PropsWithChildren) {
   return (
     <>
-      <Toaster />
+      <Toaster containerClassName="testid-toaster" />
       {props.children}
     </>
   );
