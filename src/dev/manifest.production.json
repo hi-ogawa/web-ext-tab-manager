@@ -3,7 +3,7 @@
   "manifest_version": 3,
   "name": "Tab Manager",
   "version": "1.0.0.0",
-  "homepage_url": "https://github.com/hi-ogawa/web-ext-vite-template",
+  "homepage_url": "https://github.com/hi-ogawa/web-ext-tab-manager",
   "icons": {
     "16": "assets/icon-16.png",
     "32": "assets/icon-32.png",
