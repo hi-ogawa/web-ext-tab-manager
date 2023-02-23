@@ -1,6 +1,6 @@
 import { test, chromium, BrowserContext } from "@playwright/test";
 import path from "node:path";
-import { tinyassert } from "@hiogawa/utils";
+import { booleanGuard, tinyassert } from "@hiogawa/utils";
 
 // based on https://playwright.dev/docs/chrome-extensions
 
@@ -17,14 +17,15 @@ export let EXTENSION: {
 export { testExtended as test };
 
 const testExtended = test.extend({
-  context: async ({}, use) => {
+  context: async ({ headless }, use) => {
     // launch chrome
     const context = await chromium.launchPersistentContext("", {
       headless: false,
       args: [
+        headless && `--headless=new`,
         `--load-extension=${EXTENSION_PATH}`,
         `--disable-extensions-except=${EXTENSION_PATH}`,
-      ],
+      ].filter(booleanGuard),
     });
 
     // probe background page and collect extension metadata
