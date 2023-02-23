@@ -1,6 +1,6 @@
 {
   "extends": "@tsconfig/strictest/tsconfig.json",
-  "include": ["src", "e2e"],
+  "include": ["src", "e2e", "misc/jscodeshift"],
   "exclude": ["src/dev"],
   "compilerOptions": {
     "exactOptionalPropertyTypes": false,
