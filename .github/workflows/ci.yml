@@ -39,3 +39,10 @@ jobs:
         with:
           name: e2e-trace
           path: test-results
+      - run: pnpm build
+      - run: E2E_TRACE=1 pnpm test-e2e-release
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: e2e-trace-release
+          path: test-results
