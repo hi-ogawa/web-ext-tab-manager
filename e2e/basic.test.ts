@@ -1,6 +1,6 @@
 import { EXTENSION, test } from "./helper";
-import EXAMPLE_EXPORT_JSON from "../misc/data/example-export.json";
 import { expect } from "@playwright/test";
+import fs from "node:fs";
 
 // TODO: test popup
 
@@ -16,9 +16,11 @@ test("options page", async ({ page }) => {
   await page.getByRole("button", { name: "Import | Export" }).click();
 
   // - fill input and submit
-  await page
-    .getByPlaceholder("Please input exported data")
-    .fill(JSON.stringify(EXAMPLE_EXPORT_JSON, null, 2));
+  const example = await fs.promises.readFile(
+    "misc/data/example-export.json",
+    "utf-8"
+  );
+  await page.getByPlaceholder("Please input exported data").fill(example);
   await page.getByRole("button", { name: "Import", exact: true }).click();
 
   // - wait for success message
