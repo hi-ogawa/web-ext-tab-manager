@@ -1,8 +1,8 @@
-import { retryPromise, sleep } from "../src/utils/misc";
 import { booleanGuard, tinyassert } from "@hiogawa/utils";
 import { BrowserContext, chromium, test } from "@playwright/test";
 import path from "node:path";
 import process from "node:process";
+import { retryPromise, sleep } from "../src/utils/misc";
 
 // based on https://playwright.dev/docs/chrome-extensions
 

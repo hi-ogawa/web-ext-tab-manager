@@ -1,11 +1,11 @@
+import { booleanGuard, tinyassert } from "@hiogawa/utils";
+import { Compose } from "@hiogawa/utils-react";
+import browser from "webextension-polyfill";
 import { CustomQueryClientProvider, ToasterWrapper } from "../components/misc";
 import {
   tabManagerRemote,
   useTabManagerRemoteReady,
 } from "../utils/tab-manager-remote";
-import { booleanGuard, tinyassert } from "@hiogawa/utils";
-import { Compose } from "@hiogawa/utils-react";
-import browser from "webextension-polyfill";
 
 export function App() {
   return (

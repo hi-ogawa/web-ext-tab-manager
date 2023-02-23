@@ -1,11 +1,11 @@
-import { PortEventEmitter } from "./comlink-utils";
-import { generateId } from "./misc";
-import { EVENT_NOTIFY } from "./tab-manager-common";
 import { booleanGuard } from "@hiogawa/utils";
 import { pick, sum } from "lodash";
 import * as superjson from "superjson";
 import browser from "webextension-polyfill";
 import { z } from "zod";
+import { PortEventEmitter } from "./comlink-utils";
+import { generateId } from "./misc";
+import { EVENT_NOTIFY } from "./tab-manager-common";
 
 const STORAGE_KEY = "__TabManager_3";
 const STORAGE_PROPS: (keyof TabManager)[] = ["groups"];

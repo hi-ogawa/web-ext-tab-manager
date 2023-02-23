@@ -1,10 +1,10 @@
+import { useQuery } from "@tanstack/react-query";
+import type { Remote } from "comlink";
+import { toast } from "react-hot-toast";
 import { PortEventEmitterRemote, wrapComlinkOnPort } from "./comlink-utils";
 import { retryPromise } from "./misc";
 import type { TabManager } from "./tab-manager";
 import { CONNECT_TAB_MANAGER } from "./tab-manager-common";
-import { useQuery } from "@tanstack/react-query";
-import type { Remote } from "comlink";
-import { toast } from "react-hot-toast";
 
 export let tabManagerRemoteReady: Promise<boolean>;
 export let tabManagerRemote: Remote<TabManager>;
