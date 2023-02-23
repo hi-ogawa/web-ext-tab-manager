@@ -8,6 +8,18 @@ import { sortBy } from "lodash";
 //   NODE_OPTIONS='-r esbuild-register' npx jscodeshift --no-babel --parser tsx --transform misc/jscodeshift/isort.ts $(git grep -l . '*.ts' '*.tsx' '*.js' '*.jsx')
 //
 
+// cf. https://github.com/trivago/prettier-plugin-sort-imports/blob/89d66f706423e44f29d525529af37e5d41a74133/src/index.ts#L9
+interface IsortOptions {
+  order: RegExp[];
+  sortSpecifiers: boolean;
+}
+
+// TODO: configurable?
+const options: IsortOptions = {
+  order: [/^[./]/],
+  sortSpecifiers: true,
+};
+
 export default function transformer(file: FileInfo, api: API) {
   const j = api.jscodeshift;
   const $j = j(file.source);
@@ -18,8 +30,10 @@ export default function transformer(file: FileInfo, api: API) {
   program.body = sortStatements(program.body);
 
   // sorty ImportDeclaration.specifiers array
-  for (const decl of $j.find(j.ImportDeclaration).nodes()) {
-    sortImportSpecifiers(decl);
+  if (options.sortSpecifiers) {
+    for (const decl of $j.find(j.ImportDeclaration).nodes()) {
+      sortImportSpecifiers(decl);
+    }
   }
 
   return $j.toSource();
@@ -50,10 +64,15 @@ export default function transformer(file: FileInfo, api: API) {
   function sortImportDeclarations(
     decls: ImportDeclaration[]
   ): ImportDeclaration[] {
-    return sortBy(decls, (decl) => {
+    const declSources: [ImportDeclaration, string][] = decls.map((decl) => {
       tinyassert(j.StringLiteral.check(decl.source));
-      return decl.source.value;
+      return [decl, decl.source.value];
     });
+    return sortBy(
+      declSources,
+      ([_, source]) => options.order.findIndex((re) => source.match(re)),
+      ([_, source]) => source
+    ).map(([decl]) => decl);
   }
 
   // mutate
