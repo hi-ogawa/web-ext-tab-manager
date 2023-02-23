@@ -2,7 +2,7 @@
 
 import "http://localhost:18181/@vite/client";
 
-import RefreshRuntime from "http://localhost:18181/@react-refresh";
+import RefreshRuntime from "http://localhost:18181/@react-refresh"; // isort-ignore
 
 RefreshRuntime.injectIntoGlobalHook(window);
 window.$RefreshReg$ = () => {};

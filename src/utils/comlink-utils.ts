@@ -1,11 +1,11 @@
-import browser from "webextension-polyfill";
-import type { Endpoint } from "comlink";
-import { DefaultMap, tinyassert } from "@hiogawa/utils";
-import * as comlink from "comlink";
-import * as superjson from "superjson";
-import { generateId, sleep } from "./misc";
-import EventEmitter from "eventemitter3";
 import { logger } from "./logger";
+import { generateId, sleep } from "./misc";
+import { DefaultMap, tinyassert } from "@hiogawa/utils";
+import type { Endpoint } from "comlink";
+import * as comlink from "comlink";
+import EventEmitter from "eventemitter3";
+import * as superjson from "superjson";
+import browser from "webextension-polyfill";
 
 // similar idea as https://github.com/GoogleChromeLabs/comlink/blob/dffe9050f63b1b39f30213adeb1dd4b9ed7d2594/src/node-adapter.ts#L24
 function createComlinkEndpoint(port: browser.Runtime.Port): Endpoint {
