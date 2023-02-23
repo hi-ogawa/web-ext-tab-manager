@@ -7,7 +7,7 @@ import { initializeLogger } from "../utils/logger";
 
 async function main() {
   initializeLogger();
-  await initializeTabManagerRemote();
+  initializeTabManagerRemote();
   const el = document.querySelector("#root");
   tinyassert(el);
   const root = createRoot(el);
