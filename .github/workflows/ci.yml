@@ -20,3 +20,22 @@ jobs:
         with:
           name: web-ext-tab-manager
           path: release
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 7
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 18
+      - run: pnpm i
+      - run: npx playwright install chromium --with-deps
+      - run: E2E_TRACE=1 pnpm test-e2e
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: e2e-trace
+          path: test-results

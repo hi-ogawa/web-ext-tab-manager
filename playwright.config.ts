@@ -8,6 +8,7 @@ const config: PlaywrightTestConfig = {
   },
   webServer: {
     reuseExistingServer: true,
+    // TODO: race condition ("dev:background" has to finish before "dev:vite")
     command: `pnpm dev >> e2e.log 2>&1`,
     port: 18181,
   },
