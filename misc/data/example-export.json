@@ -1,0 +1,29 @@
+{
+  "groups": [
+    {
+      "createdAt": "2023-02-18T09:54:42.422Z",
+      "tabs": [
+        {
+          "url": "https://www.youtube.com/watch?v=72vOux51-o4",
+          "title": "Jacob Collier feat. Jonah Nilsson - Do I Do (Live) | Montreux Jazz Festival 2017 - YouTube",
+          "favIconUrl": "https://www.youtube.com/s/desktop/b95ddd88/img/favicon_32x32.png"
+        }
+      ]
+    },
+    {
+      "createdAt": "2023-02-12T08:25:08.245Z",
+      "tabs": [
+        {
+          "url": "https://www.youtube.com/watch?v=gx7Krkf3t2k",
+          "title": "Cory Wong // Live at First Avenue FEB 2022 - YouTube",
+          "favIconUrl": "https://www.youtube.com/s/desktop/5191a190/img/favicon_32x32.png"
+        },
+        {
+          "url": "https://github.com/hi-ogawa/web-ext-tab-manager",
+          "title": "hi-ogawa/web-ext-tab-manager",
+          "favIconUrl": "https://github.githubassets.com/favicons/favicon.svg"
+        }
+      ]
+    }
+  ]
+}
