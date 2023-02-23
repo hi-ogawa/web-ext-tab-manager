@@ -10,6 +10,8 @@ import { tinyassert } from "@hiogawa/utils";
 import type React from "react";
 import { RemoveScroll } from "react-remove-scroll";
 
+// TODO: close button?
+
 export function Modal(props: {
   open: boolean;
   onClose: () => void;

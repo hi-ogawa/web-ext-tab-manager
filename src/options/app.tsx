@@ -75,7 +75,7 @@ function AppInner() {
           tabGroupsQuery.data.map((group) => (
             <div key={group.id} className="flex flex-col gap-2 text-sm">
               <div className="flex items-center gap-2">
-                <div className="text-lg">
+                <div className="text-lg" data-testid="tab-group-item-count">
                   {format("{length, plural, one {# tab} other {# tabs}}", {
                     length: group.tabs.length,
                   })}
@@ -114,6 +114,7 @@ function AppInner() {
                 {group.tabs.map((tab, index) => (
                   <li key={tab.id} className="flex items-center gap-2">
                     <a
+                      data-testid="tab-item-link"
                       className="flex items-center gap-2"
                       href={tab.url}
                       target="_blank"

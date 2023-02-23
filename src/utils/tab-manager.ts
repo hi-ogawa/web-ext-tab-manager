@@ -1,10 +1,11 @@
 import browser from "webextension-polyfill";
 import * as superjson from "superjson";
 import { generateId } from "./misc";
-import { pick } from "lodash";
+import { pick, sum } from "lodash";
 import { z } from "zod";
 import { PortEventEmitter } from "./comlink-utils";
 import { EVENT_NOTIFY } from "./tab-manager-common";
+import { booleanGuard } from "@hiogawa/utils";
 
 const STORAGE_KEY = "__TabManager_3";
 const STORAGE_PROPS: (keyof TabManager)[] = ["groups"];
@@ -45,10 +46,22 @@ export class TabManager {
   // api
   //
 
-  runImport(serialized: string) {
+  async updateCountBadge() {
+    const count = sum(this.groups.map((g) => g.tabs.length));
+    // browser.browserAction.setBadgeTextColor not available in chrome
+    await (browser.browserAction || browser.action).setBadgeBackgroundColor({
+      color: "#bbb",
+    });
+    await (browser.browserAction || browser.action).setBadgeText({
+      text: String(count),
+    });
+  }
+
+  async runImport(serialized: string) {
     const groups = deserializeExport(serialized);
     this.groups = groups.concat(this.groups);
-    this.save();
+    await this.updateCountBadge();
+    await this.save();
   }
 
   runExport(): string {
@@ -63,36 +76,33 @@ export class TabManager {
     return this.groups;
   }
 
-  addTabGroup(tabs: browser.Tabs.Tab[]) {
+  async addTabGroup(tabs: browser.Tabs.Tab[]) {
     const group: SavedTabGroup = {
       id: generateId(),
       createdAt: new Date(),
       tabs: tabs.map(toSavedTab),
     };
     this.groups.unshift(group);
-    this.save();
+    await this.updateCountBadge();
+    await this.save();
   }
 
-  deleteTabGroup(id: string) {
+  async deleteTabGroup(id: string) {
     this.groups = this.groups.filter((g) => g.id !== id);
-    this.save();
+    await this.updateCountBadge();
+    await this.save();
   }
 
   async restoreTabGroup(id: string) {
     const group = this.groups.find((g) => g.id === id);
     if (group) {
-      // TODO: remove default new tab
-      const newWindow = await browser.windows.create();
-      for (const tab of group.tabs) {
-        await browser.tabs.create({
-          url: tab.url,
-          windowId: newWindow.id,
-        });
-      }
+      await browser.windows.create({
+        url: group.tabs.map((t) => t.url).filter(booleanGuard),
+      });
     }
   }
 
-  delteTab(id: string, index: number) {
+  async delteTab(id: string, index: number) {
     const group = this.groups.find((g) => g.id === id);
     if (group) {
       group.tabs.splice(index, 1);
@@ -100,7 +110,8 @@ export class TabManager {
         this.groups = this.groups.filter((g) => g.id !== id);
       }
     }
-    this.save();
+    await this.updateCountBadge();
+    await this.save();
   }
 }
 

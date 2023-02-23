@@ -1,6 +1,6 @@
 {
   "extends": "@tsconfig/strictest/tsconfig.json",
-  "include": ["src"],
+  "include": ["src", "e2e"],
   "exclude": ["src/dev"],
   "compilerOptions": {
     "exactOptionalPropertyTypes": false,
