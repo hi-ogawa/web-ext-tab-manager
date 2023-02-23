@@ -2,10 +2,8 @@ import { EXTENSION, test } from "./helper";
 import { expect } from "@playwright/test";
 import fs from "node:fs";
 
-// TODO: test popup
-
 test("options page", async ({ page }) => {
-  // open "options" page
+  // extension options page
   await page.goto(EXTENSION.optionsUrl);
 
   //
@@ -32,9 +30,10 @@ test("options page", async ({ page }) => {
   //
   // click item and open new tab
   //
-  await expect(page.getByTestId("tab-group-item-count").nth(1)).toHaveText(
-    "2 tabs"
-  );
+  await expect(page.getByTestId("tab-group-item-count")).toHaveText([
+    "1 tab",
+    "2 tabs",
+  ]);
   const newPagePromise = page.waitForEvent("popup");
   await page
     .getByRole("link", { name: "hi-ogawa/web-ext-tab-manager", exact: true })
@@ -47,7 +46,31 @@ test("options page", async ({ page }) => {
     );
     await page.close();
   }
-  await expect(page.getByTestId("tab-group-item-count").nth(1)).toHaveText(
-    "1 tab"
-  );
+  await expect(page.getByTestId("tab-group-item-count")).toHaveText([
+    "1 tab",
+    "1 tab", // clicked item is removed
+  ]);
+});
+
+test("popup page", async ({ page, context }) => {
+  // popup page
+  await page.goto(EXTENSION.popupUrl);
+
+  // open example page in a new tab
+  const examplePage = await context.newPage();
+  await examplePage.goto("https://example.com");
+  const otherPageClosed = examplePage.waitForEvent("close");
+
+  // save tabs
+  const optionsPagePromise = context.waitForEvent("page"); // automatically opened
+  await page.getByRole("button", { name: "Save all tabs" }).click();
+  await otherPageClosed;
+
+  // check saved tabs
+  const optionsPage = await optionsPagePromise;
+  await expect(optionsPage).toHaveURL(EXTENSION.optionsUrl);
+  await expect(optionsPage.getByTestId("tab-item-link")).toHaveText([
+    "about:blank",
+    "Example Domain",
+  ]);
 });

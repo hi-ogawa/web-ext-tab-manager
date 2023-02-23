@@ -106,6 +106,7 @@ export function AppInner() {
                 {group.tabs.map((tab, index) => (
                   <li key={tab.id} className="flex items-center gap-2">
                     <a
+                      data-testid="tab-item-link"
                       className="flex items-center gap-2"
                       href={tab.url}
                       target="_blank"
