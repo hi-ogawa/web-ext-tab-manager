@@ -1,9 +1,9 @@
-import "../styles/index.ts";
-import { createRoot } from "react-dom/client";
 import { tinyassert } from "@hiogawa/utils";
-import { App } from "./app";
-import { initializeTabManagerRemote } from "../utils/tab-manager-remote";
+import { createRoot } from "react-dom/client";
+import "../styles/index.ts";
 import { initializeLogger } from "../utils/logger";
+import { initializeTabManagerRemote } from "../utils/tab-manager-remote";
+import { App } from "./app";
 
 async function main() {
   initializeLogger();
