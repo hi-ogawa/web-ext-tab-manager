@@ -1,8 +1,7 @@
-import { tinyassert } from "@hiogawa/utils";
+import { booleanGuard, tinyassert } from "@hiogawa/utils";
 import { Compose } from "@hiogawa/utils-react";
 import browser from "webextension-polyfill";
 import { CustomQueryClientProvider, ToasterWrapper } from "../components/misc";
-import { isNonNil } from "../utils/misc";
 import {
   tabManagerRemote,
   useTabManagerRemoteReady,
@@ -42,7 +41,7 @@ function AppInner() {
             await tabManagerRemote.notify();
             if (!e.ctrlKey) {
               await focusOrOpenOptionsPage();
-              await browser.tabs.remove([currentTab.id].filter(isNonNil));
+              await browser.tabs.remove([currentTab.id].filter(booleanGuard));
             }
           }
         }}
@@ -63,7 +62,9 @@ function AppInner() {
           await tabManagerRemote.notify();
           if (!e.ctrlKey) {
             await focusOrOpenOptionsPage();
-            await browser.tabs.remove(tabs.map((t) => t.id).filter(isNonNil));
+            await browser.tabs.remove(
+              tabs.map((t) => t.id).filter(booleanGuard)
+            );
           }
         }}
       >
