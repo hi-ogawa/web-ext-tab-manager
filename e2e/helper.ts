@@ -1,11 +1,13 @@
 import { test, chromium, BrowserContext } from "@playwright/test";
 import path from "node:path";
+import process from "node:process";
 import { booleanGuard, tinyassert } from "@hiogawa/utils";
+import { retryPromise, sleep } from "../src/utils/misc";
 
 // based on https://playwright.dev/docs/chrome-extensions
 
-// TODO: configurable (support release build)
-const EXTENSION_PATH = path.join(__dirname, "..", "src", "dev");
+const EXTENSION_PATH =
+  process.env["E2E_EXTENSION_PATH"] || path.join(__dirname, "..", "src", "dev");
 
 export let EXTENSION: {
   id: string;
@@ -31,9 +33,13 @@ const testExtended = test.extend({
     // probe background page and collect extension metadata
     const background = await getBackground(context);
     const id = new URL(background.url()).host;
-    const manifest = await background.evaluate(() =>
-      // @ts-expect-error
-      chrome.runtime.getManifest()
+    // deal with some random race condition for manifest v3 (release build)
+    await sleep(100);
+    const manifest = await retryPromise(3)(() =>
+      background.evaluate(() =>
+        // @ts-expect-error
+        chrome.runtime.getManifest()
+      )
     );
     tinyassert(id);
     tinyassert(manifest);
@@ -78,8 +84,4 @@ async function promiseResolveDefined<T>(f: () => T | undefined): Promise<T> {
 async function promiseRejectTimeout(ms: number): Promise<never> {
   await sleep(ms);
   throw new Error("promiseRejectTimeout");
-}
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }
