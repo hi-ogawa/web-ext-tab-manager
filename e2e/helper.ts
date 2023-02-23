@@ -2,18 +2,23 @@ import { test, chromium, BrowserContext } from "@playwright/test";
 import path from "node:path";
 import { tinyassert } from "@hiogawa/utils";
 
+// based on https://playwright.dev/docs/chrome-extensions
+
+// TODO: configurable (support release build)
 const EXTENSION_PATH = path.join(__dirname, "..", "src", "dev");
 
-export let EXTENSION_ID: string;
-export let EXTENSION_URL: string;
-export let OPTIONS_PAGE_URL: string; // TODO: same directory structure for dev/prod
-export let POPUP_PAGE_URL: string;
-export let EXTENSION_MANIFEST: unknown;
+export let EXTENSION: {
+  id: string;
+  manifest: any;
+  optionsUrl: string;
+  popupUrl: string;
+};
 
 export { testExtended as test };
 
 const testExtended = test.extend({
   context: async ({}, use) => {
+    // launch chrome
     const context = await chromium.launchPersistentContext("", {
       headless: false,
       args: [
@@ -21,14 +26,25 @@ const testExtended = test.extend({
         `--disable-extensions-except=${EXTENSION_PATH}`,
       ],
     });
+
+    // probe background page and collect extension metadata
     const background = await getBackground(context);
-    EXTENSION_MANIFEST = await background.evaluate(() =>
+    const id = new URL(background.url()).host;
+    const manifest = await background.evaluate(() =>
       // @ts-expect-error
       chrome.runtime.getManifest()
     );
-    EXTENSION_ID = new URL(background.url()).host;
-    EXTENSION_URL = `chrome-extension://${EXTENSION_ID}`;
-    tinyassert(EXTENSION_ID);
+    tinyassert(id);
+    tinyassert(manifest);
+    // prettier-ignore
+    EXTENSION = {
+      id,
+      manifest,
+      optionsUrl: `chrome-extension://${id}/${manifest.options_page}`,
+      popupUrl: `chrome-extension://${id}/${(manifest.browser_action ?? manifest.action).default_popup}`,
+    };
+
+    // start test
     await use(context);
     await context.close();
   },

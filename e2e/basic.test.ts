@@ -1,4 +1,4 @@
-import { EXTENSION_URL, test } from "./helper";
+import { EXTENSION, test } from "./helper";
 import EXAMPLE_EXPORT_JSON from "../misc/data/example-export.json";
 import { expect } from "@playwright/test";
 
@@ -6,7 +6,7 @@ import { expect } from "@playwright/test";
 
 test("options page", async ({ page }) => {
   // open "options" page
-  await page.goto(EXTENSION_URL + "/options/index.html");
+  await page.goto(EXTENSION.optionsUrl);
 
   //
   // import example data
