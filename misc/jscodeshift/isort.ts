@@ -1,13 +1,11 @@
 import { tinyassert } from "@hiogawa/utils";
 import type { StatementKind } from "ast-types/gen/kinds";
 import type { API, FileInfo, ImportDeclaration } from "jscodeshift";
-
-// skip transforming node_modules
-const { sortBy, range } = require("lodash") as typeof import("lodash");
+import { sortBy } from "lodash";
 
 //
 // usage:
-//   npx jscodeshift --parser tsx --transform misc/jscodeshift/isort.ts $(git grep -l . '*.ts' '*.tsx')
+//   NODE_OPTIONS='-r esbuild-register' npx jscodeshift --no-babel --parser tsx --transform misc/jscodeshift/isort.ts $(git grep -l . '*.ts' '*.tsx' '*.js' '*.jsx')
 //
 
 export default function transformer(file: FileInfo, api: API) {
@@ -31,23 +29,22 @@ export default function transformer(file: FileInfo, api: API) {
   //
 
   function sortStatements(statements: StatementKind[]): StatementKind[] {
-    // group neighboring statements
-    const groups = groupNeighborBy(
+    const groups: [boolean, StatementKind[]][] = groupNeighborBy(
       statements,
-      (stmt) => stmt.type === "ImportDeclaration"
+      (stmt) =>
+        stmt.type === "ImportDeclaration" &&
+        !stmt.comments?.some((c) => c.value.includes("isort-ignore"))
     );
 
-    // sort each ImportDeclaration group
-    for (const i of range(groups.length)) {
-      const group = groups[i]!;
-      if (group[0]?.type !== "ImportDeclaration") {
+    for (const group of groups) {
+      if (!group[0]) {
         continue;
       }
-      groups[i] = sortImportDeclarations(groups[i] as ImportDeclaration[]);
+      tinyassert(group[1].every((stmt) => j.ImportDeclaration.check(stmt)));
+      group[1] = sortImportDeclarations(group[1] as ImportDeclaration[]);
     }
 
-    // concat groups
-    return groups.flat();
+    return groups.map((group) => group[1]).flat();
   }
 
   function sortImportDeclarations(
@@ -78,16 +75,18 @@ export default function transformer(file: FileInfo, api: API) {
 // utils
 //
 
-function groupNeighborBy<T, K>(ls: T[], f: (x: T) => K): T[][] {
+function groupNeighborBy<T, K>(ls: T[], f: (x: T) => K): [K, T[]][] {
   if (ls.length === 0) {
     return [];
   }
-  const groups: T[][] = [[ls.shift()!]];
+  const first = ls.shift() as T;
+  const groups: [K, T[]][] = [[f(first), [first]]];
   for (const x of ls) {
-    if (f(x) === f(groups.at(-1)![0]!)) {
-      groups.at(-1)!.push(x);
+    const y = f(x);
+    if (y === groups.at(-1)![0]) {
+      groups.at(-1)![1].push(x);
     } else {
-      groups.push([x]);
+      groups.push([y, [x]]);
     }
   }
   return groups;
