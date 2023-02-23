@@ -57,10 +57,6 @@ export class TabManager {
     });
   }
 
-  ping(): boolean {
-    return true;
-  }
-
   async runImport(serialized: string) {
     const groups = deserializeExport(serialized);
     this.groups = groups.concat(this.groups);

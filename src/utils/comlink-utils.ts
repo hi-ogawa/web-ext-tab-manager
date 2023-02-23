@@ -3,7 +3,7 @@ import type { Endpoint } from "comlink";
 import { DefaultMap, tinyassert } from "@hiogawa/utils";
 import * as comlink from "comlink";
 import * as superjson from "superjson";
-import { generateId } from "./misc";
+import { generateId, sleep } from "./misc";
 import EventEmitter from "eventemitter3";
 import { logger } from "./logger";
 
@@ -56,8 +56,10 @@ function createComlinkEndpoint(port: browser.Runtime.Port): Endpoint {
 // comlink.wrap/expose on top of browser.Runtime.Port
 //
 
-export function wrapComlinkOnPort<T>(portName: string): comlink.Remote<T> {
-  const port = connectPort(portName);
+export async function wrapComlinkOnPort<T>(
+  portName: string
+): Promise<comlink.Remote<T>> {
+  const port = await connectPort(portName);
   // TODO: ability to disconnect? `port.disconnect`
   const endpoint = createComlinkEndpoint(port);
   const proxy = comlink.wrap<T>(endpoint);
@@ -72,23 +74,35 @@ export function exposeComlinkOnPort(portName: string, service: unknown) {
 
 //
 // runtime.connect/onConnect wrapper
-// TODO: explicit initial handshake between sharePort/receivePort to make sure connection is established? with error on given timeout?
 //
+
+async function connectPort(portName: string): Promise<browser.Runtime.Port> {
+  logger.debug("sharePort:register %s", portName);
+  const port = browser.runtime.connect({ name: portName });
+  await handshakeConnectPort(port);
+  const onDisconnect = () => {
+    logger.debug("connectPort:onDisconnect %s", portName);
+    port.onDisconnect.removeListener(onDisconnect);
+  };
+  port.onDisconnect.addListener(onDisconnect);
+  return port;
+}
 
 function receivePort(
   portName: string,
   onConnect: (port: browser.Runtime.Port) => void
 ) {
   logger.debug("receivePort:register %s", portName);
-  const handler = (port: browser.Runtime.Port) => {
+  const handler = async (port: browser.Runtime.Port) => {
     if (port.name === portName) {
       logger.debug("receivePort:handler %s", portName);
-      onConnect(port);
       const onDisconnect = () => {
         logger.debug("receivePort:onDisconnect %s", portName);
         port.onDisconnect.removeListener(onDisconnect);
       };
       port.onDisconnect.addListener(onDisconnect);
+      await handshakeReceivePort(port);
+      onConnect(port);
     }
   };
   browser.runtime.onConnect.addListener(handler);
@@ -106,15 +120,43 @@ function receivePortOnce(portName: string): Promise<browser.Runtime.Port> {
   });
 }
 
-function connectPort(portName: string) {
-  logger.debug("sharePort:register %s", portName);
-  const port = browser.runtime.connect({ name: portName });
-  const onDisconnect = () => {
-    logger.debug("connectPort:onDisconnect %s", portName);
-    port.onDisconnect.removeListener(onDisconnect);
-  };
-  port.onDisconnect.addListener(onDisconnect);
-  return port;
+const HANDSHAKE_ID = "HANDSHAKE_ID";
+const HANDSHAKE_TIMEOUT = 1000;
+
+async function handshakeConnectPort(port: browser.Runtime.Port): Promise<void> {
+  const id = `handshake:${generateId()}`;
+  const message = { [HANDSHAKE_ID]: id };
+  const handshakePromise = new Promise<void>((resolve, reject) => {
+    const handler = (reply: any) => {
+      port.onMessage.removeListener(handler);
+      if (reply[HANDSHAKE_ID] === id) {
+        resolve();
+      } else {
+        reject(new Error("handshakeConnectPort"));
+      }
+    };
+    port.onMessage.addListener(handler);
+    port.postMessage(message);
+  });
+  const timeoutPromise = sleep(HANDSHAKE_TIMEOUT).then(() => {
+    throw new Error("handshakeConnectPort:timeout");
+  });
+  return Promise.race([handshakePromise, timeoutPromise]);
+}
+
+async function handshakeReceivePort(port: browser.Runtime.Port): Promise<void> {
+  const handshakePromise = new Promise<void>((resolve) => {
+    const handler = (message: any) => {
+      port.onMessage.removeListener(handler);
+      port.postMessage(message); // reply message as is
+      resolve();
+    };
+    port.onMessage.addListener(handler);
+  });
+  const timeoutPromise = sleep(HANDSHAKE_TIMEOUT).then(() => {
+    throw new Error("handshakeReceivePort:timeout");
+  });
+  return Promise.race([handshakePromise, timeoutPromise]);
 }
 
 //
@@ -175,7 +217,7 @@ export class PortEventEmitterRemote {
   async on(type: string, handler: (...args: any[]) => void) {
     const portId = `portId:${generateId()}`;
     await this.remote.preparePort(portId);
-    const port = connectPort(portId);
+    const port = await connectPort(portId);
     await this.remote.on(type, portId);
     port.onMessage.addListener(handler);
   }
