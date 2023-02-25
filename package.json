@@ -17,8 +17,10 @@
     "test-e2e-release": "E2E_EXTENSION_PATH=\"$PWD/dist\" playwright test",
     "lint": "run-s lint:*",
     "lint-check": "run-s lint-check:*",
-    "lint:prettier": "prettier --write --cache . --plugin=@hiogawa/isort-ts",
-    "lint-check:prettier": "prettier --check --cache . --plugin=@hiogawa/isort-ts"
+    "lint:isort": "pnpm lint-check:isort --fix",
+    "lint-check:isort": "isort-ts $(git grep -l . '*.ts' '*.tsx') $(git ls-files --others --exclude-standard '*.ts' '*.tsx')",
+    "lint:prettier": "prettier --write --cache .",
+    "lint-check:prettier": "prettier --check --cache ."
   },
   "dependencies": {
     "@floating-ui/react-dom-interactions": "^0.13.3",
