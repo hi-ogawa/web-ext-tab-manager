@@ -40,7 +40,7 @@ function AppInner() {
             await tabManagerRemote.addTabGroup([currentTab]);
             await tabManagerRemote.notify();
             if (!e.ctrlKey) {
-              await focusOrOpenOptionsPage();
+              focusOrOpenOptionsPage(); // TODO: not working on manaifest v3
               await browser.tabs.remove([currentTab.id].filter(booleanGuard));
             }
           }
@@ -61,7 +61,7 @@ function AppInner() {
           await tabManagerRemote.addTabGroup(tabs);
           await tabManagerRemote.notify();
           if (!e.ctrlKey) {
-            await focusOrOpenOptionsPage();
+            focusOrOpenOptionsPage();
             await browser.tabs.remove(
               tabs.map((t) => t.id).filter(booleanGuard)
             );
@@ -94,6 +94,7 @@ const MANIFEST = browser.runtime.getManifest();
 // prettier-ignore
 const OPTIONS_PAGE_URL = `chrome-extension://${browser.runtime.id}/${(MANIFEST as any).options_page}`;
 
+// TODO: not working on manifest v3?
 async function focusOrOpenOptionsPage() {
   const tabs = await browser.tabs.query({
     url: OPTIONS_PAGE_URL,
