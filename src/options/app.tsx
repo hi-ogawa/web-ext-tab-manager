@@ -2,21 +2,21 @@ import { Compose } from "@hiogawa/utils-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import React from "react";
 import toast from "react-hot-toast";
+import { z } from "zod";
 import {
   CustomQueryClientProvider,
   ImgWithFallback,
   ToasterWrapper,
 } from "../components/misc";
 import { Modal } from "../components/modal";
-import { intl, format } from "../utils/intl";
+import { format, intl } from "../utils/intl";
 import { cls } from "../utils/misc";
+import { EVENT_NOTIFY } from "../utils/tab-manager-common";
 import {
   tabManagerEventEmitterRemote,
   tabManagerRemote,
   useTabManagerRemoteReady,
 } from "../utils/tab-manager-remote";
-import { z } from "zod";
-import { EVENT_NOTIFY } from "../utils/tab-manager-common";
 
 export function App() {
   return (
