@@ -18,7 +18,7 @@
     "lint": "run-s lint:*",
     "lint-check": "run-s lint-check:*",
     "lint:isort": "pnpm lint-check:isort --fix",
-    "lint-check:isort": "isort-ts $(git grep -l . '*.ts' '*.tsx') $(git ls-files --others --exclude-standard '*.ts' '*.tsx')",
+    "lint-check:isort": "isort-ts --git --cache",
     "lint:prettier": "prettier --write --cache .",
     "lint-check:prettier": "prettier --check --cache ."
   },
@@ -44,7 +44,7 @@
     "zod": "^3.20.6"
   },
   "devDependencies": {
-    "@hiogawa/isort-ts": "1.0.0-pre.0",
+    "@hiogawa/isort-ts": "1.0.0-pre.5",
     "@hiogawa/unocss-preset-antd": "^1.4.0",
     "@iconify-json/ri": "^1.1.4",
     "@playwright/test": "^1.31.0",

@@ -1,5 +1,5 @@
-import { expect } from "@playwright/test";
 import fs from "node:fs";
+import { expect } from "@playwright/test";
 import { EXTENSION, test } from "./helper";
 
 test("options page", async ({ page }) => {
