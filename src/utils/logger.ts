@@ -1,6 +1,6 @@
 import { tinyassert } from "@hiogawa/utils";
 import { createLogWriter } from "@roarr/browser-log-writer";
-import { Roarr, ROARR } from "roarr";
+import { ROARR, Roarr } from "roarr";
 
 // https://github.com/gajus/roarr
 

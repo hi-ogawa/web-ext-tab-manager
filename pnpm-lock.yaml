@@ -4,7 +4,7 @@ specifiers:
   '@floating-ui/react-dom-interactions': ^0.13.3
   '@formatjs/intl': ^2.6.5
   '@headlessui/react': ^1.7.10
-  '@hiogawa/isort-ts': 1.0.0-pre.5
+  '@hiogawa/isort-ts': 1.0.0-pre.9
   '@hiogawa/unocss-preset-antd': ^1.4.0
   '@hiogawa/utils': ^1.0.3
   '@hiogawa/utils-react': 1.0.0-pre.1
@@ -64,7 +64,7 @@ dependencies:
   zod: 3.20.6
 
 devDependencies:
-  '@hiogawa/isort-ts': 1.0.0-pre.5_ioxdq35luteszuxmt2jhnqjeca
+  '@hiogawa/isort-ts': 1.0.0-pre.9_ioxdq35luteszuxmt2jhnqjeca
   '@hiogawa/unocss-preset-antd': 1.4.0_unocss@0.49.4
   '@iconify-json/ri': 1.1.4
   '@playwright/test': 1.31.0
@@ -932,8 +932,8 @@ packages:
       react-dom: 18.2.0_react@18.2.0
     dev: false
 
-  /@hiogawa/isort-ts/1.0.0-pre.5_ioxdq35luteszuxmt2jhnqjeca:
-    resolution: {integrity: sha512-0ffVSiXhlo9RAeTB1PGSkWDTKb30MRi36aVsj0bjZsWdJsn0ykUDy6vI/glc40YikQHGjSF7yHfaNdjpWpLYbA==}
+  /@hiogawa/isort-ts/1.0.0-pre.9_ioxdq35luteszuxmt2jhnqjeca:
+    resolution: {integrity: sha512-0L7RUnbjzSYateIO/NeORmEccfmW+1tvWRv5SHgOj+ux+boJEdQErbHa/dB9QocmWNB8YHF3Q/i9+RvbZB3maw==}
     hasBin: true
     peerDependencies:
       prettier: '*'
