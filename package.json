@@ -13,6 +13,7 @@
     "preview": "npx web-ext run -s dist -t chromium",
     "preview-dev": "npx web-ext run -s src/dev -t chromium",
     "tsc": "tsc -b",
+    "generate-tw": "unocss-typescript-dsl --outDir src/styles/tw",
     "test-e2e": "playwright test",
     "test-e2e-release": "E2E_EXTENSION_PATH=\"$PWD/dist\" playwright test",
     "lint": "run-s lint:*",
@@ -45,7 +46,8 @@
   },
   "devDependencies": {
     "@hiogawa/isort-ts": "1.0.0-pre.10",
-    "@hiogawa/unocss-preset-antd": "^1.4.0",
+    "@hiogawa/unocss-preset-antd": "^2.0.1",
+    "@hiogawa/unocss-typescript-dsl": "2.0.0-pre.4",
     "@iconify-json/ri": "^1.1.4",
     "@playwright/test": "^1.31.0",
     "@tsconfig/strictest": "^1.0.2",

@@ -1,7 +1,8 @@
 import path from "node:path";
 import react from "@vitejs/plugin-react";
 import unocss from "unocss/vite";
-import { defineConfig } from "vite";
+import { IndexHtmlTransform, defineConfig } from "vite";
+import type { Plugin } from "vite";
 
 export default defineConfig({
   appType: "mpa",
@@ -14,5 +15,15 @@ export default defineConfig({
       },
     },
   },
-  plugins: [unocss(), react()],
+  plugins: [unocss(), react(), injectThemeScriptPlugin()],
 });
+
+function injectThemeScriptPlugin(): Plugin {
+  return {
+    name: injectThemeScriptPlugin.name,
+    transformIndexHtml: (html) => {
+      return html;
+      // return html.replace("<inject-theme-script />", "");
+    },
+  };
+}
