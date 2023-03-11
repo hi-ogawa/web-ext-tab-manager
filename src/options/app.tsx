@@ -9,6 +9,7 @@ import {
   ToasterWrapper,
 } from "../components/misc";
 import { Modal } from "../components/modal";
+import { ThemeSelect } from "../components/theme-select";
 import { format, intl } from "../utils/intl";
 import { cls } from "../utils/misc";
 import { EVENT_NOTIFY } from "../utils/tab-manager-common";
@@ -59,9 +60,10 @@ function AppInner() {
   // TODO: drag-drop
   return (
     <div className="flex flex-col gap-3 p-3">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
         <h1 className="text-xl">Tab Manager</h1>
         <ImportExportModalButton />
+        <ThemeSelect />
         {(tabManagerRemoteReadyQuery.isFetching ||
           tabGroupsQuery.isFetching) && (
           <span className="antd-spin w-5 h-5"></span>
