@@ -6,7 +6,6 @@ specifiers:
   '@headlessui/react': ^1.7.10
   '@hiogawa/isort-ts': 1.0.0-pre.10
   '@hiogawa/unocss-preset-antd': ^2.0.1
-  '@hiogawa/unocss-typescript-dsl': 2.0.0-pre.4
   '@hiogawa/utils': ^1.0.3
   '@hiogawa/utils-react': 1.0.0-pre.1
   '@iconify-json/ri': ^1.1.4
@@ -67,7 +66,6 @@ dependencies:
 devDependencies:
   '@hiogawa/isort-ts': 1.0.0-pre.10_ioxdq35luteszuxmt2jhnqjeca
   '@hiogawa/unocss-preset-antd': 2.0.1_unocss@0.49.4
-  '@hiogawa/unocss-typescript-dsl': 2.0.0-pre.4
   '@iconify-json/ri': 1.1.4
   '@playwright/test': 1.31.0
   '@tsconfig/strictest': 1.0.2
@@ -957,21 +955,6 @@ packages:
       '@unocss/reset': 0.48.5
       local-pkg: 0.4.3
       unocss: 0.49.4_vite@4.1.1
-    dev: true
-
-  /@hiogawa/unocss-typescript-dsl/2.0.0-pre.4:
-    resolution: {integrity: sha512-jechxsSyO3BTHjGGxP8/ieCrb2OghsSY/y44mj2E1kpQiTjK3EY0y/6Bq9t3zPGHyS9WCthtE6T1XC5HCPWFeg==}
-    hasBin: true
-    peerDependencies:
-      '@iconify/utils': '*'
-      '@unocss/config': '*'
-      '@unocss/core': '*'
-      local-pkg: '*'
-      magic-string: '*'
-    dependencies:
-      cac: 6.7.14
-      consola: 2.15.3
-      zod: 3.21.4
     dev: true
 
   /@hiogawa/utils-react/1.0.0-pre.1_react@18.2.0:
@@ -6182,7 +6165,3 @@ packages:
   /zod/3.20.6:
     resolution: {integrity: sha512-oyu0m54SGCtzh6EClBVqDDlAYRz4jrVtKwQ7ZnsEmMI9HnzuZFj8QFwAY1M5uniIYACdGvv0PBWPF2kO0aNofA==}
     dev: false
-
-  /zod/3.21.4:
-    resolution: {integrity: sha512-m46AKbrzKVzOzs/DZgVnG5H55N1sv1M8qZU3A8RIKbs3mrACDNeIOeilDymVb2HdmP8uwshOCF4uJ8uM9rCqJw==}
-    dev: true
