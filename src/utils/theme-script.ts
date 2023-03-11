@@ -1,37 +1,29 @@
-// copied from https://github.com/hi-ogawa/unocss-preset-antd/blob/main/packages/app/index.html
+const STORAGE_KEY = "tab-manager:theme";
 
 export function getTheme() {
-  return window.localStorage.getItem("theme") || "system";
+  return window.localStorage.getItem(STORAGE_KEY) || "dark";
 }
 
 export function setTheme(theme: string) {
-  window.localStorage.setItem("theme", theme);
+  window.localStorage.setItem(STORAGE_KEY, theme);
   applyTheme(theme);
 }
 
-const prefersDark = window.matchMedia("(prefers-color-scheme: dark)");
-
-// TODO: move to index.html
+// TOOD: move to "head" script
 export function initializeTheme() {
   applyTheme(getTheme());
-  prefersDark.addEventListener("change", () => {
-    applyTheme(getTheme());
-  });
 }
 
 function applyTheme(theme: string) {
-  const classList = document.documentElement.classList;
-  classList.remove("dark", "light");
-  if (theme === "system") {
-    theme = prefersDark.matches ? "dark" : "light";
-  }
   disableTransitions(() => {
+    const classList = document.documentElement.classList;
+    classList.remove("dark", "light");
     classList.add(theme === "dark" ? "dark" : "light");
   });
 }
 
 // https://paco.me/writing/disable-theme-transitions
-function disableTransitions(f: () => void) {
+function disableTransitions(callback: () => void) {
   const el = document.createElement("style");
   el.setAttribute("type", "text/css");
   el.appendChild(
@@ -46,7 +38,8 @@ function disableTransitions(f: () => void) {
     `)
   );
   document.head.appendChild(el);
-  f();
+  callback();
+  // force redraw
   if (
     !document.firstElementChild ||
     !window.getComputedStyle(document.firstElementChild).transition
